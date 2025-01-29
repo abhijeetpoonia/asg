@@ -21,15 +21,11 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     steps:
-      - name: Remove default repo
-        run: rm -rf ${{ github.workspace }}/*
-        
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
           repository: abhijeetpoonia/asg
           ref: main
-          path: asg
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -43,21 +39,21 @@ jobs:
           
       - name: Terraform Init
         run: terraform init
-        working-directory: asg/environments/dev
+        working-directory: environments/dev
         
       - name: Terraform Format
         run: terraform fmt -check
-        working-directory: asg/environments/dev
+        working-directory: environments/dev
         
       - name: Terraform Validate
         run: terraform validate
-        working-directory: asg/environments/dev
+        working-directory: environments/dev
         
       - name: Terraform Plan
         run: terraform plan -no-color
-        working-directory: asg/environments/dev
+        working-directory: environments/dev
         
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
-        working-directory: asg/environments/dev
+        working-directory: environments/dev
