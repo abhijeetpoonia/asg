@@ -16,13 +16,13 @@ jobs:
     steps:
       - name: Remove default repo (dope)
         run: rm -rf ${{ github.workspace }}/*
-        
+
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
            repository: abhijeetpoonia/asg
            ref: main
-           path: asg
+           path: asg  # Checkout the repository under the 'asg' subdirectory
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -36,17 +36,17 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: asg/environments/dev
+        working-directory: asg/environments/dev  # Path to the 'dev' folder inside 'environments'
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: asg/environments/dev
+        working-directory: asg/environments/dev  # Path to the 'dev' folder inside 'environments'
 
       - name: Terraform Plan
         run: terraform plan
-        working-directory: asg/environments/dev
+        working-directory: asg/environments/dev  # Path to the 'dev' folder inside 'environments'
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve
-        working-directory: asg/environments/dev
+        working-directory: asg/environments/dev  # Path to the 'dev' folder inside 'environments'
