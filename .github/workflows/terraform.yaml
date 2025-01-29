@@ -10,20 +10,18 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-
 jobs:
   init:
     runs-on: ubuntu-latest
     steps:
       - name: Remove default repo (dope)
         run: rm -rf ${{ github.workspace }}/*
-        
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
-          repository: abhijeetpoonia/asg
-          ref: main
-          path: asg
+           repository: abhijeetpoonia/asg
+           ref: main
+           path: asg
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -36,12 +34,8 @@ jobs:
           aws-region: ap-south-1
           
       - name: Terraform Init
-        run: terraform init \
-          -backend-config="bucket=${{ secrets.TF_S3_BUCKET }}" \
-          -backend-config="key=asg/${{ inputs.environment }}/terraform.tfstate" \
-          -backend-config="region=${{ secrets.AWS_DEFAULT_REGION }}" \
-          -backend-config="encrypt=true"
-        working-directory: asg/environments/dev
+        run: terraform init
+        working-directory: asg/enviroments/dev
 
   validate:
     needs: init
@@ -50,20 +44,20 @@ jobs:
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
-          repository: abhijeetpoonia/asg
-          ref: main
-          path: asg
+         repository: abhijeetpoonia/asg
+         ref: main
+         path: asg
             
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
         run: terraform init
-        working-directory: asg/environments/${{ inputs.environment }}
+        working-directory: asg/environments/dev
         
       - name: Terraform Validate
         run: terraform validate
-        working-directory: asg/environments/${{ inputs.environment }}
+        working-directory:  asg/enviroments/dev
 
   plan:
     needs: validate
@@ -75,6 +69,7 @@ jobs:
           repository: abhijeetpoonia/asg
           ref: main
           path: asg
+          
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -88,7 +83,7 @@ jobs:
           
       - name: Terraform Plan
         run: terraform plan
-        working-directory: asg/environments/${{ inputs.environment }}
+        working-directory: asg/enviroments/dev
 
   apply:
     needs: plan
@@ -113,4 +108,4 @@ jobs:
           
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: asg/environments/${{ inputs.environment }}
+        working-directory: environments/dev
