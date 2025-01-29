@@ -45,3 +45,4 @@ resource "aws_launch_template" "this" {
       Name = var.launch_template_name
     }
   )
+}
