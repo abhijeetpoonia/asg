@@ -38,10 +38,10 @@ jobs:
       - name: Terraform Init
         run: terraform init \
           -backend-config="bucket=${{ secrets.TF_S3_BUCKET }}" \
-          -backend-config="key=asg/${{ terraform.workspace }}/terraform.tfstate" \
+          -backend-config="key=asg/${{ inputs.environment }}/terraform.tfstate" \
           -backend-config="region=${{ secrets.AWS_DEFAULT_REGION }}" \
           -backend-config="encrypt=true"
-        working-directory: asg/environments/dev
+        working-directory: asg/environments/${{ inputs.environment }}
 
   validate:
     needs: init
@@ -59,11 +59,11 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: asg/environments/dev
+        working-directory: asg/environments/${{ inputs.environment }}
         
       - name: Terraform Validate
         run: terraform validate
-        working-directory: asg/environments/dev
+        working-directory: asg/environments/${{ inputs.environment }}
 
   plan:
     needs: validate
@@ -88,7 +88,7 @@ jobs:
           
       - name: Terraform Plan
         run: terraform plan
-        working-directory: asg/environments/dev
+        working-directory: asg/environments/${{ inputs.environment }}
 
   apply:
     needs: plan
@@ -113,4 +113,4 @@ jobs:
           
       - name: Terraform Apply
         run: terraform apply -auto-approve
-        working-directory: asg/environments/dev
+        working-directory: asg/environments/${{ inputs.environment }}
