@@ -11,3 +11,4 @@ output "launch_template_latest_version" {
 output "launch_template_name" {
   description = "The name of the launch template"
   value       = aws_launch_template.this.name
+}
