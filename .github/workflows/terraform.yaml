@@ -17,8 +17,8 @@ jobs:
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
-          repository: abhijeetpoonia/asg  # Add this - specify the repo with terraform files
-          ref: main  # Specify the branch
+          repository: abhijeetpoonia/asg   
+          ref: main  
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
