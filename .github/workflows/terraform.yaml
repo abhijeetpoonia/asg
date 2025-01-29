@@ -7,9 +7,9 @@ on:
         required: true
         type: string
     secrets:
-      aws-access-key-id:
+      aws_access_key_id:
         required: true
-      aws-secret-access-key:
+      aws_secret_access_key:
         required: true
 
 jobs:
