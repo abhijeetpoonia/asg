@@ -35,27 +35,29 @@ jobs:
           
       - name: Terraform Init
         run: terraform init
-        working-directory: asg/environments/dev
+        working-directory: asg/enviroments/dev
 
   validate:
     needs: init
     runs-on: ubuntu-latest
     steps:
-      - name: Remove default repo (dope)
-        run: rm -rf ${{ github.workspace }}/*
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
          repository: abhijeetpoonia/asg
          ref: main
          path: asg
-
+            
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: asg/environments/dev
         
       - name: Terraform Validate
         run: terraform validate
-        working-directory: asg/environments/dev
+        working-directory:  asg/enviroments/dev
 
   plan:
     needs: validate
