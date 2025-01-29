@@ -34,7 +34,11 @@ jobs:
           aws-region: ap-south-1
           
       - name: Terraform Init
-        run: terraform init
+        run:  terraform init \
+          -backend-config="bucket=${{ secrets.TF_S3_BUCKET }}" \
+          -backend-config="key=asg/${{ terraform.workspace }}/terraform.tfstate" \
+          -backend-config="region=${{ secrets.AWS_DEFAULT_REGION }}" \
+          -backend-config="encrypt=true"
         working-directory: asg/enviroments/dev
 
   validate:
