@@ -16,3 +16,4 @@ tags = {
   Environment = "dev"
   Project     = "dev-project"
   Managed_by  = "terraform"
+}
