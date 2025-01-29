@@ -17,7 +17,7 @@ jobs:
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
-          repository: abhijeetpoonia/asg   
+          path: abhijeetpoonia/asg   
           ref: main  
           
       - name: Setup Terraform
@@ -32,7 +32,7 @@ jobs:
           
       - name: Terraform Init
         run: terraform init
-        working-directory: environments/dev
+        working-directory: asg/environments/dev
 
   validate:
     needs: init
