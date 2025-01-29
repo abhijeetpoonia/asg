@@ -14,3 +14,4 @@ output "asg_details" {
     arn  = module.asg.asg_arn
     name = module.asg.asg_name
   }
+}
