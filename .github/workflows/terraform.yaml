@@ -21,7 +21,7 @@ jobs:
         with:
            repository: abhijeetpoonia/asg
            ref: main
-           path: enviroments/dev
+           path: asg
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -35,7 +35,7 @@ jobs:
           
       - name: Terraform Init
         run: terraform init
-        working-directory: asg/environments/dev
+        working-directory: asg/enviroments/dev
 
   validate:
     needs: init
