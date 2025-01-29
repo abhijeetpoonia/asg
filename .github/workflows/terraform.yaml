@@ -21,11 +21,15 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     steps:
+      - name: Remove default repo (dope)
+        run: rm -rf ${{ github.workspace }}/*
+        
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
           repository: abhijeetpoonia/asg
           ref: main
+          path: asg
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -37,23 +41,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
           
+      - name: List Directory Contents
+        run: ls -la asg/environments/dev
+        
       - name: Terraform Init
         run: terraform init
-        working-directory: environments/dev
+        working-directory: asg/environments/dev
         
       - name: Terraform Format
         run: terraform fmt -check
-        working-directory: environments/dev
+        working-directory: asg/environments/dev
         
       - name: Terraform Validate
         run: terraform validate
-        working-directory: environments/dev
+        working-directory: asg/environments/dev
         
       - name: Terraform Plan
         run: terraform plan -no-color
-        working-directory: environments/dev
+        working-directory: asg/environments/dev
         
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
-        working-directory: environments/dev
+        working-directory: asg/environments/dev
