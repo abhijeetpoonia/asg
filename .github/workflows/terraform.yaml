@@ -41,7 +41,7 @@ jobs:
           -backend-config="key=asg/${{ inputs.environment }}/terraform.tfstate" \
           -backend-config="region=${{ secrets.AWS_DEFAULT_REGION }}" \
           -backend-config="encrypt=true"
-        working-directory: asg/environments/${{ inputs.environment }}
+        working-directory: asg/environments/dev
 
   validate:
     needs: init
