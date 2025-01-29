@@ -1,4 +1,4 @@
-name: Terraform Multi-Job Deployment
+name: Terraform Single Job Deployment
 on:
   push:
     branches:
@@ -18,7 +18,7 @@ on:
         required: true
 
 jobs:
-  init:
+  terraform:
     runs-on: ubuntu-latest
     steps:
       - name: Remove default repo
@@ -34,16 +34,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         
-      - name: Cache Terraform
-        uses: actions/cache@v3
-        with:
-          path: |
-            asg/environments/dev/.terraform
-            asg/environments/dev/.terraform.lock.hcl
-          key: ${{ runner.os }}-terraform-${{ hashFiles('asg/environments/dev/**/*.tf') }}
-          restore-keys: |
-            ${{ runner.os }}-terraform-
-          
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -54,106 +44,20 @@ jobs:
       - name: Terraform Init
         run: terraform init
         working-directory: asg/environments/dev
-
-  validate:
-    needs: init
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout terraform repository
-        uses: actions/checkout@v3
-        with:
-          repository: abhijeetpoonia/asg
-          ref: main
-          path: asg
-          
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
         
-      - name: Restore Terraform Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            asg/environments/dev/.terraform
-            asg/environments/dev/.terraform.lock.hcl
-          key: ${{ runner.os }}-terraform-${{ hashFiles('asg/environments/dev/**/*.tf') }}
-          restore-keys: |
-            ${{ runner.os }}-terraform-
-          
+      - name: Terraform Format
+        run: terraform fmt -check
+        working-directory: asg/environments/dev
+        
       - name: Terraform Validate
         run: terraform validate
         working-directory: asg/environments/dev
-
-  plan:
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout terraform repository
-        uses: actions/checkout@v3
-        with:
-          repository: abhijeetpoonia/asg
-          ref: main
-          path: asg
-          
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
         
-      - name: Restore Terraform Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            asg/environments/dev/.terraform
-            asg/environments/dev/.terraform.lock.hcl
-          key: ${{ runner.os }}-terraform-${{ hashFiles('asg/environments/dev/**/*.tf') }}
-          restore-keys: |
-            ${{ runner.os }}-terraform-
-          
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
-          
       - name: Terraform Plan
         run: terraform plan -no-color
         working-directory: asg/environments/dev
-
-  apply:
-    needs: plan
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout terraform repository
-        uses: actions/checkout@v3
-        with:
-          repository: abhijeetpoonia/asg
-          ref: main
-          path: asg
-          
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        
-      - name: Restore Terraform Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            asg/environments/dev/.terraform
-            asg/environments/dev/.terraform.lock.hcl
-          key: ${{ runner.os }}-terraform-${{ hashFiles('asg/environments/dev/**/*.tf') }}
-          restore-keys: |
-            ${{ runner.os }}-terraform-
-          
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
-          
-      - name: Terraform Init
-        run: terraform init
-        working-directory: asg/environments/dev
         
       - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
         working-directory: asg/environments/dev
