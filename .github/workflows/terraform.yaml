@@ -38,6 +38,7 @@ jobs:
         working-directory: asg/enviroments/dev
 
   validate:
+    needs: init
     runs-on: ubuntu-latest
     steps:
       - name: Checkout terraform repository
