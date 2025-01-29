@@ -19,7 +19,7 @@ jobs:
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
-           repository: abhijeetpoonia/asg
+           repository: /home/runner/work/asg/asg/environments/dev
            ref: main
            path: .
           
