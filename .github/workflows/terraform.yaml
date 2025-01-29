@@ -22,8 +22,9 @@ jobs:
         with:
            repository: abhijeetpoonia/asg
            ref: main
-           path: asg  # Checkout the repository under the 'asg' subdirectory
-
+           # Ensure that you check it out directly to the root workspace
+           # No need for 'path' here, remove the path: asg entry
+           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
@@ -36,17 +37,17 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: asg/environments/dev  # Path to the 'dev' folder inside 'environments'
+        working-directory: environments/dev  # Path relative to the root of the repo
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: asg/environments/dev  # Path to the 'dev' folder inside 'environments'
+        working-directory: environments/dev  # Path relative to the root of the repo
 
       - name: Terraform Plan
         run: terraform plan
-        working-directory: asg/environments/dev  # Path to the 'dev' folder inside 'environments'
+        working-directory: environments/dev  # Path relative to the root of the repo
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve
-        working-directory: asg/environments/dev  # Path to the 'dev' folder inside 'environments'
+        working-directory: environments/dev  # Path relative to the root of the repo
