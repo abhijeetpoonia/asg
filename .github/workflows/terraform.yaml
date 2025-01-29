@@ -44,15 +44,16 @@ jobs:
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
-          repository: abhijeetpoonia/asg
-          ref: main
-          
+         repository: abhijeetpoonia/asg
+         ref: main
+         path: asg
+            
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         
       - name: Terraform Validate
         run: terraform validate
-        working-directory: environments/dev
+        working-directory:  asg/enviroments/dev
 
   plan:
     needs: validate
@@ -63,6 +64,8 @@ jobs:
         with:
           repository: abhijeetpoonia/asg
           ref: main
+          path: asg
+          
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -76,7 +79,7 @@ jobs:
           
       - name: Terraform Plan
         run: terraform plan
-        working-directory: environments/dev
+        working-directory: asg/enviroments/dev
 
   apply:
     needs: plan
