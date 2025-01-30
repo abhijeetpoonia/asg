@@ -62,9 +62,13 @@ jobs:
 
       - name: Trigger Dope Repository Workflow
         if: github.ref == 'refs/heads/main'  # Trigger only on the 'main' branch
-        uses: peter-evans/repository-dispatch@v1
+        uses: peter-evans/repository-dispatch@v3  # Using version 3 of the action
         with:
           repository: abhijeetpoonia/dope  # Target repository (dope)
-          event-type: trigger-pipeline  # Custom event name
-          client-payload: '{"ref": "main", "environment": "main"}'  # Send payload with event details
+          event-type: trigger-pipeline  # Custom event name, should match in `dope` repo
+          client-payload: |
+            {
+              "ref": "main",
+              "environment": "main"
+            }
           token: ${{ secrets.token }}  # Use GitHub token for authentication
