@@ -19,7 +19,7 @@ jobs:
         with:
           repository: abhijeetpoonia/asg
           ref: main
-          path: asg
+          path: asg/environments/dev
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
