@@ -24,7 +24,7 @@ jobs:
         run: |
           pwd
           ls -la
-          cd asg
+          cd enviroments/dev
           ls -la
           
       - name: Setup Terraform
