@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: abhijeetpoonia/asg
-          ref: ${{ inputs.target_branch }} 
+          ref: ${{ inputs.ref }} 
           
       - name: Debug Directory Structure
         run: |
