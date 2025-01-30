@@ -10,16 +10,17 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+
 jobs:
-  init:
+  terraform:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
-           repository: abhijeetpoonia/asg
-           ref: main
-           
+          repository: abhijeetpoonia/asg
+          ref: main
+          
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         
@@ -30,23 +31,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
           
-      - name: Terraform Init
-        run: terraform init
-        working-directory: environments/dev
-
-  validate:
-    needs: init
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout terraform repository
-        uses: actions/checkout@v3
-        with:
-         repository: abhijeetpoonia/asg
-         ref: main
-            
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        
       - name: Terraform Init
         run: terraform init
         working-directory: environments/dev
@@ -54,52 +38,12 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
         working-directory: environments/dev
-
-  plan:
-    needs: validate
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout terraform repository
-        uses: actions/checkout@v3
-        with:
-          repository: abhijeetpoonia/asg
-          ref: main
-          
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
         
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
-          
       - name: Terraform Plan
         run: terraform plan
         working-directory: environments/dev
-
-  apply:
-    needs: plan
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout terraform repository
-        uses: actions/checkout@v3
-        with:
-          repository: abhijeetpoonia/asg
-          ref: main
-          
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
         
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
-          
       - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve
         working-directory: environments/dev
