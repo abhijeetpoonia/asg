@@ -1,8 +1,6 @@
 name: Terraform Deployment
-
 on:
-  repository_dispatch:
-    types: [trigger-pipeline]  # Listen for the 'trigger-pipeline' event
+  workflow_call:
     inputs:
       environment:
         required: true
@@ -12,8 +10,6 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-
-
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -28,7 +24,7 @@ jobs:
         run: |
           pwd
           ls -la
-          cd environments/dev
+          cd enviroments/dev
           ls -la
           
       - name: Setup Terraform
@@ -43,23 +39,21 @@ jobs:
           
       - name: Terraform Init
         run: |
-          cd environments/main
+          cd enviroments/dev
           terraform init
         
       - name: Terraform Validate
         run: |
-          cd environments/main
+          cd enviroments/dev
           terraform validate
         
       - name: Terraform Plan
         run: |
-          cd environments/main
+          cd enviroments/dev
           terraform plan
         
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: |
-          cd environments/main
+          cd enviroments/dev
           terraform apply -auto-approve
-
-      
