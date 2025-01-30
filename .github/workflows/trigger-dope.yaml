@@ -1,7 +1,7 @@
 name: Trigger Dope Workflow
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main,]
     paths-ignore:
       - '.github/workflows/**'
 
@@ -9,6 +9,12 @@ jobs:
   trigger:
     runs-on: ubuntu-latest
     steps:
+      - name: Debug Event
+        run: |
+          echo "Change detected in ASG repo"
+          echo "Branch: ${{ github.ref }}"
+          echo "Triggering dope workflow..."
+          
       - name: Trigger Dope Workflow
         run: |
           curl -X POST \
