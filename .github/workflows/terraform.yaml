@@ -10,14 +10,9 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    environment:
-      name: ${{ inputs.environment }}
-      url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-    
     steps:
       - name: Checkout terraform repository
         uses: actions/checkout@v3
@@ -55,25 +50,10 @@ jobs:
       - name: Terraform Plan
         run: |
           cd enviroments/dev
-          terraform plan -out=tfplan
-          
-      - name: Upload Terraform Plan
-        uses: actions/upload-artifact@v3
-        with:
-          name: tfplan
-          path: enviroments/dev/tfplan
-          
+          terraform plan
+        
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
-        env:
-          CONFIRM: ${{ github.event.inputs.confirm }}
         run: |
           cd enviroments/dev
-          echo "Review the plan output above. Type 'yes' to approve and apply the plan."
-          read -p "Do you want to apply this plan? (yes/no) " REPLY
-          if [ "$REPLY" = "yes" ]; then
-            terraform apply tfplan
-          else
-            echo "Terraform apply cancelled."
-            exit 0
-          fi
+          terraform apply -auto-approve
