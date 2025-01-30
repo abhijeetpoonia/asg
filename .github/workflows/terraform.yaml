@@ -14,6 +14,8 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     steps:
+      - name: Remove default repo (dope)
+        run: rm -rf ${{ github.workspace }}/*
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
