@@ -1,7 +1,8 @@
 name: Terraform Deployment
+
 on:
   repository_dispatch:
-    types: [trigger-pipeline] 
+    types: [trigger-pipeline]  # Listen for the 'trigger-pipeline' event
     inputs:
       environment:
         required: true
@@ -11,6 +12,7 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+
 
 jobs:
   terraform:
