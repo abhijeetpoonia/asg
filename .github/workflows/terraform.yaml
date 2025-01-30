@@ -24,8 +24,6 @@ jobs:
         run: |
           pwd
           ls -la
-          cd enviroments/dev
-          ls -la
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
