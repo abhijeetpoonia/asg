@@ -67,4 +67,4 @@ jobs:
           repository: abhijeetpoonia/dope  # Target repository (dope)
           event-type: trigger-pipeline  # Custom event name
           client-payload: '{"ref": "main", "environment": "main"}'  # Send payload with event details
-          token: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token for authentication
+          token: ${{ secrets.token }}  # Use GitHub token for authentication
