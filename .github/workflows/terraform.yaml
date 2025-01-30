@@ -16,12 +16,18 @@ jobs:
     steps:
       - name: Remove default repo (dope)
         run: rm -rf ${{ github.workspace }}/*
+        
       - name: Checkout terraform repository
         uses: actions/checkout@v3
         with:
           repository: abhijeetpoonia/asg
           ref: main
           path: asg
+
+      - name: Debug Directory
+        run: |
+          pwd
+          ls -la
           
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
