@@ -1,4 +1,5 @@
 name: Terraform Deployment
+
 on:
   workflow_call:
     inputs:
@@ -10,6 +11,7 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -24,7 +26,7 @@ jobs:
         run: |
           pwd
           ls -la
-          cd enviroments/dev
+          cd environments/dev
           ls -la
           
       - name: Setup Terraform
@@ -39,21 +41,30 @@ jobs:
           
       - name: Terraform Init
         run: |
-          cd enviroments/main
+          cd environments/main
           terraform init
         
       - name: Terraform Validate
         run: |
-          cd enviroments/main
+          cd environments/main
           terraform validate
         
       - name: Terraform Plan
         run: |
-          cd enviroments/main
+          cd environments/main
           terraform plan
         
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: |
-          cd enviroments/main
+          cd environments/main
           terraform apply -auto-approve
+
+      - name: Trigger Dope Repository Workflow
+        if: github.ref == 'refs/heads/main'  # Trigger only on the 'main' branch
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          repository: abhijeetpoonia/dope  # Target repository (dope)
+          event-type: trigger-pipeline  # Custom event name
+          client-payload: '{"ref": "main", "environment": "main"}'  # Send payload with event details
+          token: ${{ secrets.GITHUB_TOKEN }}  # Use GitHub token for authentication
