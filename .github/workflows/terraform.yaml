@@ -39,21 +39,21 @@ jobs:
           
       - name: Terraform Init
         run: |
-          cd enviroments/dev
+          cd enviroments/main
           terraform init
         
       - name: Terraform Validate
         run: |
-          cd enviroments/dev
+          cd enviroments/main
           terraform validate
         
       - name: Terraform Plan
         run: |
-          cd enviroments/dev
+          cd enviroments/main
           terraform plan
         
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: |
-          cd enviroments/dev
+          cd enviroments/main
           terraform apply -auto-approve
