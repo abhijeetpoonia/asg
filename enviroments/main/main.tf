@@ -20,7 +20,7 @@ module "asg" {
   desired_capacity        = var.desired_capacity
   health_check_type       = var.health_check_type
   launch_template_id      = module.launch_template.launch_template_id
-  launch_template_version = module.launch_template.launch_template_latest_version
+  launch_template_version = var.launch_template_version
   subnet_ids              = var.subnet_ids
   target_group_arns       = var.target_group_arns
   tags                    = var.tags
