@@ -61,3 +61,9 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+variable "launch_template_version" {
+  type        = string
+  description = "Version of the launch template"
+  default     = "$Latest"
+}
+
