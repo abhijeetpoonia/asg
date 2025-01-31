@@ -4,6 +4,8 @@ image_id            = "ami-0f58b397bc5c1f2e8"
 instance_type       = "t2.micro"
 key_name            = "aes"            
 security_group_ids  = ["sg-0db9e6c20711ab0bd"] 
+launch_template_version = "$Latest"  
+
 
 asg_name           = "test-asg"
 min_size           = 1
