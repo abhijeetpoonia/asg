@@ -36,44 +36,20 @@ jobs:
         run: terraform plan -input=false -no-color
         continue-on-error: true
 
-      - name: Update Pull Request
-        uses: actions/github-script@v6
+      - name: Post Plan to PR
+        uses: thollander/actions-comment-pull-request@v2
         if: github.event_name == 'pull_request'
-        env:
-          PLAN: "${{ steps.tf-plan.outputs.stdout }}"
-          ERROR: "${{ steps.tf-plan.outputs.stderr }}"
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            // Debug information
-            console.log('PR Number:', context.issue.number);
-            console.log('Owner:', context.repo.owner);
-            console.log('Repo:', context.repo.name);
-            
-            const output = `#### Terraform Plan 🔍
-            \`\`\`diff
-            ${process.env.PLAN || 'No plan output available'}
-            \`\`\`
-            
-            ${process.env.ERROR ? '```Error:\n' + process.env.ERROR + '\n```' : ''}
-            
-            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
-
-            try {
-              await github.rest.issues.createComment({
-                ...context.repo,
-                issue_number: context.issue.number,
-                body: output
-              });
-            } catch (error) {
-              console.error('Error details:', error);
-              core.setFailed(`Failed to create comment: ${error.message}`);
-            }
+          message: |
+            #### Terraform Plan Output 🔍
+            ```diff
+            ${{ env.PLAN }}
+            ```
+          comment_tag: terraform_plan
+          mode: recreate
 
       - name: Terraform Plan Status
         if: steps.tf-plan.outcome == 'failure'
         run: exit 1
 
-      - name: Terraform Plan Status
-        if: steps.tf-plan.outcome == 'failure'
-        run: exit 1
+     
