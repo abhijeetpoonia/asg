@@ -1,24 +1,23 @@
 name: Terraform Plan
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
-      - main
-  workflow_dispatch:
+      - prod
+
+permissions:
+  pull-requests: write
+  contents: read
 
 env:
-  # Update these with your AWS-specific configurations
-  tf_state_bucket: "asgbucket121"  # Your S3 bucket name
-  tf_state_key: "asg/prod/terraform.tfstate"  # The path within the bucket for the state file
+  tf_state_bucket: "asgbucket121"  # Your S3 bucket name for Terraform state
+  tf_state_key: "asg/prod/terraform.tfstate"  # Path within the bucket for state file
   tf_region: "ap-south-1"  # AWS region
 
 jobs:
   terraform-plan-output:
     if: github.event_name == 'pull_request'
-    name: Terraform
+    name: Terraform Plan
     runs-on: ubuntu-latest
     environment: production
     env:
