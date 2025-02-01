@@ -27,67 +27,40 @@ jobs:
           aws-region: ap-south-1
 
       - name: Terraform Init
-        run: |
-          cd enviroments/prod
-          terraform init
+        working-directory: environments/prod
+        run: terraform init
 
       - name: Terraform Plan
-        id: plan
-        run: |
-          cd enviroments/prod
-          
-          # Enable debug logging
-          export TF_LOG=DEBUG
-          
-          # Create plan.txt file to store the plan output
-          touch plan.txt
-          
-          # Run Terraform Plan
-          terraform plan -input=false -no-color -detailed-exitcode > plan.txt 2>&1
-          TERRAFORM_EXIT_CODE=$?
-          
-          # Print the plan output for debugging
-          echo "Plan output:"
-          cat plan.txt
-          echo "Exit code: $TERRAFORM_EXIT_CODE"
-          
-          # Add plan output to GitHub env
-          echo "PLAN<<EOF" >> $GITHUB_ENV
-          cat plan.txt >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-          
-          # Set the outcome based on the exit code
-          if [ $TERRAFORM_EXIT_CODE -eq 0 ]; then
-            echo "plan_outcome=No changes detected in plan" >> $GITHUB_ENV
-          elif [ $TERRAFORM_EXIT_CODE -eq 2 ]; then
-            echo "plan_outcome=Changes detected in plan" >> $GITHUB_ENV
-          else
-            echo "plan_outcome=Error during plan" >> $GITHUB_ENV
-            exit 1
-          fi
+        working-directory: environments/prod
+        id: tf-plan
+        run: terraform plan -input=false -no-color
+        continue-on-error: true
 
-      - name: Add Plan Comment
+      - name: Update Pull Request
         uses: actions/github-script@v6
-        if: always()
+        if: github.event_name == 'pull_request'
         env:
-          PLAN: ${{ env.PLAN }}
-          PLAN_OUTCOME: ${{ env.plan_outcome }}
+          PLAN: "${{ steps.tf-plan.outputs.stdout }}"
+          ERROR: "${{ steps.tf-plan.outputs.stderr }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const output = `#### Terraform Plan 🔍
-            **Result:** ${process.env.PLAN_OUTCOME}
-            
-            <details><summary>Show Plan</summary>
-            
-            \`\`\`terraform
+            \`\`\`diff
             ${process.env.PLAN}
             \`\`\`
-            </details>`;
-            
+
+            ${process.env.ERROR ? '```Error:\n' + process.env.ERROR + '\n```' : ''}
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.name,
               body: output
             })
+
+      - name: Terraform Plan Status
+        if: steps.tf-plan.outcome == 'failure'
+        run: exit 1
