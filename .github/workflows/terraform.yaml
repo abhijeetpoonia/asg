@@ -23,15 +23,15 @@ jobs:
           
       - name: Terraform Init
         run: |
-          cd environments/prod
+          cd enviroments/prod
           terraform init
         
       - name: Terraform Validate
         run: |
-          cd environments/prod
+          cd enviroments/prod
           terraform validate
         
       - name: Terraform Apply
         run: |
-          cd environments/prod
+          cd enviroments/prod
           terraform apply -auto-approve
