@@ -25,64 +25,64 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ${{ secrets.AWS_REGION }}  # Ensure this secret is set to your desired region
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_wrapper: true
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: true
 
-    - name: Terraform Init
-      id: init
-      run: terraform init -backend-config="bucket=$tf_state_bucket" -backend-config="key=$tf_state_key" -backend-config="region=$tf_region" -backend-config="encrypt=true"
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: ${{ secrets.AWS_REGION }}
-      working-directory: enviroments/prod
+      - name: Terraform Init
+        id: init
+        run: terraform init -backend-config="bucket=$tf_state_bucket" -backend-config="key=$tf_state_key" -backend-config="region=$tf_region" -backend-config="encrypt=true"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        working-directory: environments/prod
 
-    - name: Terraform Validate
-      id: validate
-      run: terraform validate -no-color
-      working-directory: enviroments/prod
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+        working-directory: environments/prod
 
-    - name: Terraform Plan  
-      id: plan
-      run: terraform plan -no-color -out=tfplan
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: ${{ secrets.AWS_REGION }}
-      working-directory: enviroments/prod
-      continue-on-error: false
+      - name: Terraform Plan  
+        id: plan
+        run: terraform plan -no-color -out=tfplan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        working-directory: environments/prod
+        continue-on-error: false
 
-    - name: Update Pull Request
-      uses: actions/github-script@v7
-      with:
-        github-token: ${{ secrets.TOKEN }}
-        script: |
-          const output = `#### Terraform Format and Style <img draggable="false" role="img" class="emoji" alt="🖌" src="https://s.w.org/images/core/emoji/15.0.3/svg/1f58c.svg">\`${{ steps.fmt.outcome }}\`
-          #### Terraform Initialization <img draggable="false" role="img" class="emoji" alt="🤖" src="https://s.w.org/images/core/emoji/15.0.3/svg/1f916.svg">\`${{ steps.init.outcome }}\`
-          #### Terraform Validation <img draggable="false" role="img" class="emoji" alt="🤖" src="https://s.w.org/images/core/emoji/15.0.3/svg/1f916.svg">\`${{ steps.validate.outcome }}\`
-          #### Terraform Plan <img draggable="false" role="img" class="emoji" alt="📖" src="https://s.w.org/images/core/emoji/15.0.3/svg/1f4d6.svg">\`${{ steps.plan.outcome }}\`
-          <details><summary>Show Plan</summary>
- 
-          \`\`\`\n
-          ${{ steps.plan_output.outputs.stdout }}
-          \`\`\`
- 
-          </details>
- 
-          *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+      - name: Update Pull Request
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style: \`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization: \`${{ steps.init.outcome }}\`
+            #### Terraform Validation: \`${{ steps.validate.outcome }}\`
+            #### Terraform Plan: \`${{ steps.plan.outcome }}\`
+            <details><summary>Show Plan</summary>
 
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: output
-          })
+            \`\`\`\n
+            ${{ steps.plan.outputs.stdout }}
+            \`\`\`
 
-    - name: Terraform Plan Status
-      if: steps.plan.outcome == 'failure'
-      run: exit 1
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
