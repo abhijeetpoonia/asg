@@ -1,4 +1,4 @@
- name: Terraform Plan
+name: Terraform Plan
 
 on:
   pull_request:
@@ -34,25 +34,22 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          cd environents/prod
-          export TF_LOG=DEBUG
-
-          # Run Terraform Plan and capture exit code
-          terraform plan -input=false -no-color -detailed-exitcode > plan.txt 2>&1
-          TERRAFORM_EXIT_CODE=${PIPESTATUS[0]}
-
-          # Print the plan output for debugging
-          echo "Plan output:"
-          cat plan.txt
-
-          echo "Exit code: $TERRAFORM_EXIT_CODE"
-
+          cd enviroments/prod
+          # Initialize exit code
+          TERRAFORM_EXIT_CODE=0
+          
+          # Run terraform plan and capture output
+          terraform plan -input=false -no-color -detailed-exitcode > plan.txt || TERRAFORM_EXIT_CODE=$?
+          
           # Add plan output to GitHub env
           echo "PLAN<<EOF" >> $GITHUB_ENV
           cat plan.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-
-          # Check Terraform exit code
+          
+          # Print exit code for debugging
+          echo "Terraform exit code: $TERRAFORM_EXIT_CODE"
+          
+          # Check exit code
           case $TERRAFORM_EXIT_CODE in
             0)
               echo "No changes detected in plan"
@@ -62,11 +59,13 @@ jobs:
               ;;
             *)
               echo "Error during plan"
+              cat plan.txt
               exit 1
               ;;
           esac
 
       - name: Add Plan Comment
+        if: always()
         uses: actions/github-script@v6
         env:
           PLAN: ${{ env.PLAN }}
@@ -74,13 +73,14 @@ jobs:
           github-token: ${{ secrets.TOKEN }}
           script: |
             const output = `#### Terraform Plan Output
+            
             <details><summary>Show Plan</summary>
-
+            
             \`\`\`terraform
             ${process.env.PLAN}
             \`\`\`
-
             </details>`;
+            
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
