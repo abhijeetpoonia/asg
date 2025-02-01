@@ -35,34 +35,26 @@ jobs:
         id: plan
         run: |
           cd enviroments/prod
-          # Initialize exit code
-          TERRAFORM_EXIT_CODE=0
           
-          # Run terraform plan and capture output
-          terraform plan -input=false -no-color -detailed-exitcode > plan.txt || TERRAFORM_EXIT_CODE=$?
+          # Run terraform plan and store output
+          terraform plan -input=false -no-color -detailed-exitcode > plan.txt || true
+          exit_code=${?:-0}  # Default to 0 if empty
           
           # Add plan output to GitHub env
           echo "PLAN<<EOF" >> $GITHUB_ENV
           cat plan.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
-          # Print exit code for debugging
-          echo "Terraform exit code: $TERRAFORM_EXIT_CODE"
-          
-          # Check exit code
-          case $TERRAFORM_EXIT_CODE in
-            0)
-              echo "No changes detected in plan"
-              ;;
-            2)
-              echo "Changes detected in plan"
-              ;;
-            *)
-              echo "Error during plan"
-              cat plan.txt
-              exit 1
-              ;;
-          esac
+          # Use [[ ]] for better handling of empty variables
+          if [[ ${exit_code:-0} -eq 2 ]]; then
+            echo "Changes detected in plan"
+          elif [[ ${exit_code:-0} -eq 0 ]]; then
+            echo "No changes detected in plan"
+          else
+            echo "Error during plan"
+            cat plan.txt
+            exit 1
+          fi
 
       - name: Add Plan Comment
         if: always()
