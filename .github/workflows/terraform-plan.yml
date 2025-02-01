@@ -40,17 +40,17 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
-      working-directory: ./terraform
+      working-directory: enviroments/prod
 
     - name: Terraform Fmt
       id: fmt
       run: terraform fmt -check
-      working-directory: ./terraform
+      working-directory: enviroments/prod
 
     - name: Terraform Validate
       id: validate
       run: terraform validate -no-color
-      working-directory: ./terraform
+      working-directory: enviroments/prod
 
     - name: Terraform Plan  
       id: plan
@@ -59,7 +59,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ secrets.AWS_REGION }}
-      working-directory: ./terraform
+      working-directory: enviroments/prod
       continue-on-error: false
 
     - name: Capture Terraform Plan Output
