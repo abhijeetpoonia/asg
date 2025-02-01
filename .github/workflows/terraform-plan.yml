@@ -27,11 +27,11 @@ jobs:
           aws-region: ap-south-1
 
       - name: Terraform Init
-        working-directory: environments/prod
+        working-directory: enviroments/prod
         run: terraform init
 
       - name: Terraform Plan
-        working-directory: environments/prod
+        working-directory: enviroments/prod
         id: tf-plan
         run: terraform plan -input=false -no-color
         continue-on-error: true
