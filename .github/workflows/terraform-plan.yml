@@ -27,13 +27,13 @@ jobs:
           
       - name: Terraform Init
         run: |
-          cd environments/prod
+          cd enviroments/prod
           terraform init
         
       - name: Terraform Plan
         id: plan
         run: |
-          cd environments/prod
+          cd enviroments/prod
           terraform plan -no-color > plan.txt
           echo "PLAN<<EOF" >> $GITHUB_ENV
           cat plan.txt >> $GITHUB_ENV
