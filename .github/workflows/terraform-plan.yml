@@ -34,7 +34,7 @@ jobs:
         working-directory: enviroments/prod
         id: tf-plan
         run: |
-          terraform plan -input=false -no-color | tee plan.txt
+          terraform plan -input=false -no-color > plan.txt 2>&1
           if [ ! -s plan.txt ]; then echo "Terraform plan failed or no changes detected." > plan.txt; fi
         continue-on-error: true
 
