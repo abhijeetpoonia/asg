@@ -1,4 +1,4 @@
- name: Terraform Plan
+name: Terraform Plan
 
 on:
   pull_request:
@@ -34,53 +34,57 @@ jobs:
       - name: Terraform Plan
         id: plan
         run: |
-          cd environents/prod
+          cd enviroments/prod
+          
+          # Enable debug logging
           export TF_LOG=DEBUG
-
-          # Run Terraform Plan and capture exit code
+          
+          # Create plan.txt file to store the plan output
+          touch plan.txt
+          
+          # Run Terraform Plan
           terraform plan -input=false -no-color -detailed-exitcode > plan.txt 2>&1
-          TERRAFORM_EXIT_CODE=${PIPESTATUS[0]}
-
+          TERRAFORM_EXIT_CODE=$?
+          
           # Print the plan output for debugging
           echo "Plan output:"
           cat plan.txt
-
           echo "Exit code: $TERRAFORM_EXIT_CODE"
-
+          
           # Add plan output to GitHub env
           echo "PLAN<<EOF" >> $GITHUB_ENV
           cat plan.txt >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-
-          # Check Terraform exit code
-          case $TERRAFORM_EXIT_CODE in
-            0)
-              echo "No changes detected in plan"
-              ;;
-            2)
-              echo "Changes detected in plan"
-              ;;
-            *)
-              echo "Error during plan"
-              exit 1
-              ;;
-          esac
+          
+          # Set the outcome based on the exit code
+          if [ $TERRAFORM_EXIT_CODE -eq 0 ]; then
+            echo "plan_outcome=No changes detected in plan" >> $GITHUB_ENV
+          elif [ $TERRAFORM_EXIT_CODE -eq 2 ]; then
+            echo "plan_outcome=Changes detected in plan" >> $GITHUB_ENV
+          else
+            echo "plan_outcome=Error during plan" >> $GITHUB_ENV
+            exit 1
+          fi
 
       - name: Add Plan Comment
         uses: actions/github-script@v6
+        if: always()
         env:
           PLAN: ${{ env.PLAN }}
+          PLAN_OUTCOME: ${{ env.plan_outcome }}
         with:
-          github-token: ${{ secrets.TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Plan Output
+            const output = `#### Terraform Plan 🔍
+            **Result:** ${process.env.PLAN_OUTCOME}
+            
             <details><summary>Show Plan</summary>
-
+            
             \`\`\`terraform
             ${process.env.PLAN}
             \`\`\`
-
             </details>`;
+            
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
