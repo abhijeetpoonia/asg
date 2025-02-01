@@ -1,0 +1,63 @@
+name: Terraform Plan
+on:
+  pull_request:
+    branches:
+      - prod
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout terraform repository
+        uses: actions/checkout@v3
+        
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+          
+      - name: Terraform Init
+        run: |
+          cd environments/prod
+          terraform init
+        
+      - name: Terraform Plan
+        id: plan
+        run: |
+          cd environments/prod
+          terraform plan -no-color > plan.txt
+          echo "PLAN<<EOF" >> $GITHUB_ENV
+          cat plan.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Add Plan Comment
+        uses: actions/github-script@v6
+        env:
+          PLAN: ${{ env.PLAN }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Plan Output
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.name,
+              body: output
+            })
