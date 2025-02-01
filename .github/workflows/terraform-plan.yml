@@ -44,7 +44,7 @@ jobs:
         env:
           PLAN: ${{ env.PLAN }}
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.TOKEN }}
           script: |
             const output = `#### Terraform Plan Output
             <details><summary>Show Plan</summary>
