@@ -9,53 +9,93 @@ permissions:
   pull-requests: write
   contents: read
 
+env:
+  tf_state_bucket: "asgbucket121"  # Your S3 bucket name for Terraform state
+  tf_state_key: "asg/prod/terraform.tfstate"  # Path within the bucket for state file
+  tf_region: "ap-south-1"  # AWS region
+
 jobs:
-  terraform-plan:
+  terraform-plan-output:
+    if: github.event_name == 'pull_request'
+    name: Terraform Plan
     runs-on: ubuntu-latest
+    environment: production
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}  # Ensure this secret is set to your desired region
     steps:
-      - name: Checkout terraform repository
-        uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v2
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_wrapper: true
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-south-1
+    - name: Terraform Init
+      id: init
+      run: terraform init -backend-config="bucket=$tf_state_bucket" -backend-config="key=$tf_state_key" -backend-config="region=$tf_region" -backend-config="encrypt=true"
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+      working-directory: ./terraform
 
-      - name: Terraform Init
-        working-directory: enviroments/prod
-        run: terraform init
+    - name: Terraform Fmt
+      id: fmt
+      run: terraform fmt -check
+      working-directory: ./terraform
 
-      - name: Terraform Plan
-        working-directory: enviroments/prod
-        id: tf-plan
-        run: terraform plan -input=false -no-color | tee plan.txt
-        continue-on-error: true
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+      working-directory: ./terraform
 
-      - name: Store Plan Output
-        run: |
-          {
-            echo "PLAN<<EOF"
-            cat plan.txt
-            echo "EOF"
-          } >> $GITHUB_ENV
+    - name: Terraform Plan  
+      id: plan
+      run: terraform plan -no-color -out=tfplan
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+      working-directory: ./terraform
+      continue-on-error: false
 
-      - name: Post Plan to PR
-        uses: thollander/actions-comment-pull-request@v2
-        if: github.event_name == 'pull_request'
-        with:
-          message: |
-            #### Terraform Plan Output 🔍
-            ```diff
-            ${{ env.PLAN }}
-            ```
-          comment_tag: terraform_plan
-          mode: recreate
+    - name: Capture Terraform Plan Output
+      id: plan_output
+      run: |
+        terraform show -no-color tfplan > plan.txt
+        echo "PLAN<<EOF" >> $GITHUB_ENV
+        cat plan.txt >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
 
-      - name: Terraform Plan Status
-        if: steps.tf-plan.outcome == 'failure'
-        run: exit 1
+    - name: Update Pull Request
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.USER_TOKEN }}
+        script: |
+          const output = `#### Terraform Format and Style <img draggable="false" role="img" class="emoji" alt="🖌" src="https://s.w.org/images/core/emoji/15.0.3/svg/1f58c.svg">\`${{ steps.fmt.outcome }}\`
+          #### Terraform Initialization <img draggable="false" role="img" class="emoji" alt="🤖" src="https://s.w.org/images/core/emoji/15.0.3/svg/1f916.svg">\`${{ steps.init.outcome }}\`
+          #### Terraform Validation <img draggable="false" role="img" class="emoji" alt="🤖" src="https://s.w.org/images/core/emoji/15.0.3/svg/1f916.svg">\`${{ steps.validate.outcome }}\`
+          #### Terraform Plan <img draggable="false" role="img" class="emoji" alt="📖" src="https://s.w.org/images/core/emoji/15.0.3/svg/1f4d6.svg">\`${{ steps.plan.outcome }}\`
+          <details><summary>Show Plan</summary>
+ 
+          \`\`\`\n
+          ${{ steps.plan_output.outputs.stdout }}
+          \`\`\`
+ 
+          </details>
+ 
+          *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
+
+    - name: Terraform Plan Status
+      if: steps.plan.outcome == 'failure'
+      run: exit 1
