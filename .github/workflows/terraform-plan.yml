@@ -10,9 +10,9 @@ permissions:
   contents: read
 
 env:
-  tf_state_bucket: "asgbucket121"  # Your S3 bucket name for Terraform state
-  tf_state_key: "asg/prod/terraform.tfstate"  # Path within the bucket for state file
-  tf_region: "ap-south-1"  # AWS region
+  tf_state_bucket: "asgbucket121"  
+  tf_state_key: "asg/prod/terraform.tfstate"  
+  tf_region: "ap-south-1"  
 
 jobs:
   terraform-plan-output:
@@ -23,7 +23,7 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}  # Ensure this secret is set to your desired region
+      AWS_REGION: ${{ secrets.AWS_REGION }}  
     steps:
       - name: Checkout Code
         uses: actions/checkout@v2
