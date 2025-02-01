@@ -33,16 +33,16 @@ jobs:
       - name: Terraform Plan
         working-directory: enviroments/prod
         id: tf-plan
-        run: terraform plan -input=false -no-color | tee plan.txt
+        run: |
+          terraform plan -input=false -no-color | tee plan.txt || echo "Terraform plan failed" > plan.txt
         continue-on-error: true
 
       - name: Store Plan Output
+        working-directory: enviroments/prod
         run: |
-          {
-            echo "PLAN<<EOF"
-            cat plan.txt
-            echo "EOF"
-          } >> $GITHUB_ENV
+          echo "PLAN<<EOF" >> $GITHUB_ENV
+          cat plan.txt >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Post Plan to PR
         uses: thollander/actions-comment-pull-request@v2
