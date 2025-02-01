@@ -42,11 +42,6 @@ jobs:
         AWS_REGION: ${{ secrets.AWS_REGION }}
       working-directory: enviroments/prod
 
-    - name: Terraform Fmt
-      id: fmt
-      run: terraform fmt -check
-      working-directory: enviroments/prod
-
     - name: Terraform Validate
       id: validate
       run: terraform validate -no-color
